@@ -2,10 +2,11 @@ int[][] slot;
 boolean[][] flagSlot; // use for flag
 int bombCount; // 共有幾顆炸彈
 int clickCount; // 共點了幾格
-int flagCount; // 共插了幾支旗
+int flagCount=0; // 共插了幾支旗
 int nSlot; // 分割 nSlot*nSlot格
 int totalSlots; // 總格數
 final int SLOT_SIZE = 100; //每格大小
+boolean turn;
 
 int sideLength; // SLOT_SIZE * nSlot
 int ix; // (width - sideLength)/2
@@ -67,7 +68,27 @@ void draw(){
           break;
     case GAME_RUN:
           //---------------- put you code here ----
-
+         
+          if(clickCount==totalSlots-bombCount){
+            for(int x=0 ; x<nSlot ; x++)
+              for(int y=0 ; y<nSlot ; y++){
+              
+              if(slot[x][y]==SLOT_BOMB){
+                showSlot(x,y,SLOT_BOMB);
+              }
+              else if(slot[x][y]==SLOT_FLAG &&
+                       slot[x][y]==SLOT_BOMB){
+                showSlot(x,y,SLOT_FLAG_BOMB);
+              }
+              else if(slot[x][y]==SLOT_FLAG &&
+                       slot[x][y]==SLOT_SAFE){
+                showSlot(x,y,SLOT_SAFE);
+              }
+              else {
+                showSlot(x,y,SLOT_SAFE);
+              }
+          }     gameState=GAME_WIN;
+          }
           // -----------------------------------
           break;
     case GAME_WIN:
@@ -85,8 +106,20 @@ void draw(){
 
 int countNeighborBombs(int col,int row){
   // -------------- Requirement B ---------
-  return 0;
+    int count = 0;
+for(int x=-1;x<=1;x++){
+  for(int y=-1;y<=1;y++){
+      if(col+x>=0 &&col+x<=3 &&row+y>=0&&row+y<=3){
+   if(slot[col+x][row+y]==SLOT_BOMB){
+    count++;
+ }
 }
+}
+}
+return count;
+
+    } 
+
 
 void setBombs(){
   // initial slot
@@ -97,6 +130,11 @@ void setBombs(){
   }
   // -------------- put your code here ---------
   // randomly set bombs
+  for (int i=0; i < bombCount; i++){
+    int col = int(random(nSlot));
+    int row = int(random(nSlot));
+     slot[col][row] = SLOT_BOMB;
+  }
 
   // ---------------------------------------
 }
@@ -173,11 +211,30 @@ void mousePressed(){
        mouseX >= ix && mouseX <= ix+sideLength && 
        mouseY >= iy && mouseY <= iy+sideLength){
     
-    // --------------- put you code here -------     
+    // --------------- put your code here -------     
 
-    // -------------------------
     
+    int col = int(( int(mouseX) - ix ) / SLOT_SIZE);
+    int row = int(( int(mouseY) - iy ) / SLOT_SIZE);
+    if (mouseButton == LEFT){ // left click
+  if (slot[col][row] == SLOT_OFF){
+     showSlot(col, row, SLOT_SAFE);
+     slot[col][row]=SLOT_SAFE;
+     clickCount++;
   }
+if (slot[col][row] == SLOT_BOMB){
+     showSlot(col, row, SLOT_DEAD);
+     slot[col][row]=SLOT_DEAD;
+  }
+  if(slot[col][row] == SLOT_DEAD){
+      gameState=GAME_LOSE;
+  }
+  if(totalSlots-bombCount==clickCount){
+      gameState=GAME_WIN;
+  }
+     }
+  // -------------------------  
+}
 }
 
 // press enter to start
